@@ -49,9 +49,9 @@ This mini project was developed as part of the B.Tech coursework in the Departme
 
 ### 👥 Team Members
 
+- **Fardeen Khan**  
 - **Asish Singh** 
-- **Vivek Mimrot**
-- **Fardeen Khan**   
+- **Vivek Mimrot** 
 - **Kapil Dawar**  
 
 ### 🎓 Guided By
