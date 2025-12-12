@@ -161,20 +161,65 @@ static size_t jpg_encode_stream(void *arg, size_t index, const void *data, size_
 //=========================================================================================================================================================
 //FOR barcode reading (get EAN NUMBER Corresponding to given product Barcode)
 //=========================================================================================================================================================
-const char* serverUrl ="barcodedecoder.onrender.com" ;              //use For checking in development phase "192.168.XXX.XXX";  
-//const int serverPort =8000 ;                                      //development testing port example
-const int serverPort = 443; // HTTPS port
+const char* serverUrl ="";      //use For checking in development phase "192.168.XXX.XXX";  
+const int serverPort ="";                           //development testing port example
+//const int serverPort = 443; // HTTPS port
 //=========================================================================================================================================================
 //FOR barcode reading (get EAN NUMBER Corresponding to given product Barcode)
 //=========================================================================================================================================================
-const char* nutriServerHost ="ntriscanserver.com";                   // Replace with deoloyed nutriscan server 
+const char* nutriServerHost ="";           // Replace with deoloyed nutriscan server 
 const int nutriServerPort = 500;                                     // HTTPS port for nutri server for testing phase 
 //===================================================================================================================================================================================================
 //e]Enter Same password entered in cameraserver.ino  used for authenticating the esp32cam user on nutriscanserver.com(this wifi is checked with that being saved from frontened in firebase already 
 //and ensure the given esp32cam device which uses given wifi is registered already)                                              
 //===================================================================================================================================================================================================
-const char *wifipass= "YOUR wIFIPASSWORD";  
+const char *wifipass="";               
+const char* nodeMCUIP = "esp8266";       // ⚠ Replace with your NodeMCU(esp8266) IP
+void sendFullMessageToLCD(StaticJsonDocument<512> &doc){
+  String combinedMsg = "";
 
+  // Combining all message fields
+  if (doc["message1"]) combinedMsg += doc["message1"].as<String>() + " | ";
+  if (doc["message2"]) combinedMsg += doc["message2"].as<String>() + " | ";
+  if (doc["message3"]) combinedMsg += doc["message3"].as<String>() + " | ";
+  if (doc["message4"]) combinedMsg += doc["message4"].as<String>() + " | ";
+
+  // final section
+  if (doc["final"].is<JsonObject>()) {
+    JsonObject final = doc["final"].as<JsonObject>();
+    String title = final["title"] | "Unknown";
+    String flag = "";
+    String desc = "";
+
+    if (final["alerts"].is<JsonArray>()) {
+      JsonArray alerts = final["alerts"].as<JsonArray>();
+      if (alerts.size() > 0) {
+        flag = alerts[0]["flag"] | "";
+        desc = alerts[0]["desc"] | "";
+      }
+    }
+    Serial.printf("flag is %d\n", flag);
+    combinedMsg += "Product: " + title + " | Flag: " + flag + " | Desc: " + desc;
+    Serial.printf("ombined is %d\n", combinedMsg);
+  }
+
+
+  combinedMsg.replace(" ", "%20");
+
+  // FORWARDING response to ESP8266 
+  HTTPClient http;
+  String url = "http://" + String(nodeMCUIP) + "/msg=" + combinedMsg;
+  Serial.print("Sending single LCD message: ");
+  Serial.println(url);
+
+  http.begin(url);
+  int code = http.GET();
+  if (code > 0)
+    Serial.printf("LCD message sent (HTTP %d)\n", code);
+  else
+    Serial.printf("Send failed: %s\n", http.errorToString(code).c_str());
+  http.end();
+}
 
 //=========================================================================================================================================================
 //Send to nutri server function
@@ -186,7 +231,7 @@ void sendToNutriServer(const char* ean, const char* wifipass) {
   }
 
   HTTPClient http;
-  http.setTimeout(20000);                  //important
+  http.setTimeout(20000);//important
 
   String url = "http://" + String(nutriServerHost) + ":" + String(nutriServerPort) + "/nutri?ean=" + String(ean) + "&wifiid=" + String(wifipass);  ///nutri is actually the defined route in express.js which is being accessed
   Serial.print("Requesting URL: ");
@@ -206,12 +251,16 @@ void sendToNutriServer(const char* ean, const char* wifipass) {
 //=========================================================================================================================================================
     StaticJsonDocument<512> doc;
     DeserializationError error = deserializeJson(doc, payload);
+    
+    //deserializeJson(doc, payload);
+       // Safe aur efficient
     if (error) {
       Serial.print("Failed to parse Nutri response: ");
       Serial.println(error.f_str());
       return;
     }
-
+    sendFullMessageToLCD(doc);
+/*
 // Access the flag inside esp.alerts[0].flag 
     if (!doc["esp"].isNull() && doc["esp"]["alerts"].is<JsonArray>()) {
       JsonArray alerts = doc["esp"]["alerts"].as<JsonArray>();
@@ -219,14 +268,11 @@ void sendToNutriServer(const char* ean, const char* wifipass) {
         const char* flag = alerts[0]["flag"];
         if (strcmp(flag, "safe") == 0) {
           Serial.println("Product is safe — GREEN LED ON");
-          digitalWrite(GREEN_LED_PIN, HIGH);
-          delay(4000);
-          digitalWrite(GREEN_LED_PIN, LOW);} 
+          
+          } 
         else {
           Serial.println("Product is NOT safe — RED LED ON");
-          digitalWrite(RED_LED_PIN, HIGH);
-          delay(4000);
-          digitalWrite(RED_LED_PIN, LOW);
+          
         }
       } 
       else {
@@ -235,7 +281,7 @@ void sendToNutriServer(const char* ean, const char* wifipass) {
     } 
     else {
       Serial.println("ESP object or alerts array missing.");
-  }}
+  }*/}
 
   else{
     Serial.printf("GET request failed: %s\n", http.errorToString(httpCode).c_str());
@@ -253,8 +299,8 @@ void sendCapturedImageToServer(uint8_t* imageData, size_t imageLen) {
     return;
   }
   
-  WiFiClientSecure client;                   //if you are using local code for barcode reader and not render deployed one then simply use " WiFiClient client;"
-  client.setInsecure();              //render uses https its important to mention this line for local testing ignore it
+  WiFiClient client;                   //if you are using local code for barcode reader and not render deployed one then simply use " WiFiClient client;"
+//  client.setInsecure();              //render uses https its important to mention this line for local testing ignore it
   client.setTimeout(40000);        //its Important to add this much timout due to "render" server response time
  
 

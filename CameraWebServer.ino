@@ -2,16 +2,27 @@
 // ========================================================================================================================================
 // pins for leds because of most of the pins used by camera issue might persist and led wont glow check diff pins and pin configuration of esp32 cam
 // ========================================================================================================================================
-#include "pins.h"
+//#include "pins.h"
 #include "esp_camera.h"
 #include <WiFi.h>
 #define CAMERA_MODEL_AI_THINKER // Has PSRAM
 #include "camera_pins.h"
+//#include <LiquidCrystal_I2C.h>
+
+#include <WiFiClientSecure.h>
+#include <HTTPClient.h> 
+// Define I2C pins for ESP32-CAM
+//#define SDA_PIN 14
+//#define SCL_PIN 4
+
+// Default I2C address for most 1602 LCDs with I2C backpack is 0x27 or 0x3F
+//LiquidCrystal_I2C lcd(0x27, 16, 2);
 // ===========================
 // Enter your WiFi credentials
 // ===========================
-const char *ssid ="YOUR WIFISSID" ;                                                      
-const char *password= "YOUR wIFIPASSWORD";                  
+const char *ssid="";                                                                             
+const char *password="";                         
+String serverIP =""; //esp8266      
 
 void startCameraServer();
 void setupLedFlash(int pin);
@@ -23,16 +34,87 @@ void setupLedFlash(int pin);
 #include "FS.h"
 #include "SD_MMC.h"*/   
 #include "SPI.h"
+/*
+void printCameraPinMapping(camera_config_t &config) {
+  Serial.println("=== CAMERA PIN MAPPING ===");
+  Serial.printf("D0: %d\nD1: %d\nD2: %d\nD3: %d\nD4: %d\nD5: %d\nD6: %d\nD7: %d\n", 
+    config.pin_d0, config.pin_d1, config.pin_d2, config.pin_d3, 
+    config.pin_d4, config.pin_d5, config.pin_d6, config.pin_d7);
+  Serial.printf("XCLK: %d\nPCLK: %d\nVSYNC: %d\nHREF: %d\n", 
+    config.pin_xclk, config.pin_pclk, config.pin_vsync, config.pin_href);
+  Serial.printf("SDA: %d\nSCL: %d\nPWDN: %d\nRESET: %d\n", 
+    config.pin_sccb_sda, config.pin_sccb_scl, config.pin_pwdn, config.pin_reset);
+  Serial.println("===========================");
+}
 
+void printCameraPinStates(camera_config_t &config) {
+  Serial.println("=== CAMERA PIN STATES (before init) ===");
+  int pins[] = {
+    config.pin_d0, config.pin_d1, config.pin_d2, config.pin_d3, config.pin_d4, config.pin_d5,
+    config.pin_d6, config.pin_d7, config.pin_xclk, config.pin_pclk, config.pin_vsync, config.pin_href,
+    config.pin_sccb_sda, config.pin_sccb_scl, config.pin_pwdn, config.pin_reset
+  };
+  for (int i = 0; i < sizeof(pins)/sizeof(pins[0]); i++) {
+    int p = pins[i];
+    if (p >= 0) {
+      pinMode(p, INPUT);
+      Serial.printf("GPIO %d = %d\n", p, digitalRead(p));
+    }
+  }
+  Serial.println("=======================================");
+}*/
+/*
+void displayMessage(String msg) {
+  lcd.clear();
+
+  if (msg.length() <= 16) {
+    // Normal short message
+    lcd.setCursor(0, 0);
+    lcd.print(msg);
+  } else {
+    // Scroll long message
+    for (int i = 0; i < msg.length() - 15; i++) {
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print(msg.substring(i, i + 16)); // 16 characters visible
+      delay(300); // scroll speed
+    }
+  }
+}*/
+/*
+int totalMessages = 4;
+ String messages[] = {
+  "Wifi trying to connect...",
+  "Couldn't connect...Wait!",
+  "Connected to Wifi!",
+  "Cam server at localhost--"
+};*/
 void setup() {
   Serial.begin(115200);
-  pinMode(GREEN_LED_PIN ,OUTPUT);
-  pinMode(RED_LED_PIN ,OUTPUT);
+  //pinMode(GREEN_LED_PIN ,OUTPUT);
+ // pinMode(RED_LED_PIN ,OUTPUT);
 
   Serial.setDebugOutput(true);
   Serial.println();
 
-  Serial.begin(115200);
+  
+  //Wire.begin(SDA_PIN, SCL_PIN);
+
+  // Initialize the LCD
+  //lcd.init();
+  //lcd.backlight();
+                                            
+  // Print test message
+  //lcd.setCursor(0, 0);
+  //lcd.print("Nutriscan Wearable");
+  //displayMessage();
+  //delay(3000);
+  //displayMessage("Setting up wifi");
+  //delay(3000);
+  //displayMessage("Setting up CamServer");
+  //delay(3000);
+  //lcd.clear();
+
 
 /*
 // SDCARD SETUP
@@ -171,23 +253,57 @@ void setup() {
   WiFi.setSleep(false);
 
   Serial.print("WiFi connecting");
+  //displayMessage(messages[0]);
+  //delay(3000);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
+    //displayMessage(messages[1]);
   }
   Serial.println("");
   Serial.println("!!!WiFi connected!!!");
+  /*
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    String message = "HelloFromESP32CAM";  // change as needed
+    String url = "http://" + serverIP + "/msg=" + message;
+
+    Serial.println("Sending to: " + url);
+    http.begin(url);
+    int httpCode = http.GET();
+    if (httpCode > 0) {
+      Serial.printf("Response code: %d\n", httpCode);
+      String payload = http.getString();
+      Serial.println(payload);
+    } else {
+      Serial.printf("Error in sending: %s\n", http.errorToString(httpCode).c_str());
+    }
+    http.end();
+  }
+
+*/
+  //displayMessage(messages[2]);
 
 // ====================================================================================================================================================
 //Start the camera server this functions is defined in app_httpd.cpp  
 // ====================================================================================================================================================
   startCameraServer();
+  //delay(3000);
 // ====================================================================================================================================================
 //This is the local port on which UI will be visible 
 // ====================================================================================================================================================
   Serial.print("Camera Ready! Use 'http://");
   Serial.print(WiFi.localIP());
+  //String finalmssg=messages[3]+WiFi.localIP().toString();
+  //lcd.clear();
+  //lcd.print(finalmssg);
+  //displayMessage(finalmssg);
+  //delay(3000);
+  //lcd.clear();
   Serial.println("' to connect");
+  
+  //printCameraPinMapping(config);
+  //printCameraPinStates(config);
 }
 
 void loop() {
