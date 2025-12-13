@@ -1,6 +1,6 @@
 ## 🔍 Project Overview
 
-NutriScan is a simulation of our vision for a smart **nutrition-aware wearable band** that instantly identifies whether a food item suits the user's dietary needs. Most people don’t know their allergen risks or nutritional requirements — NutriScan bridges this gap. Instead of building just another app, we chose to design a **dedicated IoT device** for faster, hands-free decisions. This functionality can also be added to existing health bands as a powerful feature upgrade.
+NutriSentrix is a simulation of our vision for a smart **nutrition-aware wearable band** that instantly identifies whether a food item suits the user's dietary needs at the time of purchase. Most people don’t know their allergen risks or nutritional requirements — NutriSentrix bridges this gap. Instead of building just another app, we chose to design a **dedicated IoT device** for faster, hands-free decisions. This functionality can also be added to existing health bands as a powerful feature upgrade.
 
 ![alt text](./images/watchanew.png)
 
@@ -9,9 +9,11 @@ NutriScan is a simulation of our vision for a smart **nutrition-aware wearable b
 ### 📦 Hardware Components
 - **ESP32-CAM** – for barcode image capture and Wi-Fi transmission
 - **FTDI Programmer** – to flash and debug ESP32-CAM
+- **Esp8266**-for feedback simulation
+- **1602 LCD**- for messages and final response
+- **Push button**- user interaction
 - **LED Indicators (Green/Red)** – for real-time visual feedback
-- **Li-ion Battery / USB Power Supply** – for mobile, wearable operation
-
+- **Adapter and voltage module** – provide reliable supply to both controllers 
 
 ---
 
@@ -27,9 +29,10 @@ NutriScan is a simulation of our vision for a smart **nutrition-aware wearable b
 - **Express.js (Node.js)** – for ingredient analysis, Firebase integration, and API routing
 - **Firebase Realtime Database** – for storing scan history
 - **Firebase Authentication** – for user identification via Wi-Fi password
+- **Gemini ai prompt**- for improving overall response
 
 #### 🔹 Frontend
-- **React.js** – for displaying live scan results, login/signup, and dashboard
+- **React.js** – for login/signup(device registration), user preference set and montly dashboard on consumption pattern.
 - **Next.js** – used for routing and admin panel rendering
 
 #### 🔹 Deployment & Hosting
@@ -50,15 +53,13 @@ This mini project was developed as part of the B.Tech coursework in the Departme
 ### 👥 Team Members
 
 - **Fardeen Khan**  
-- **Asish Singh** 
+- **Ashish Singh** 
 - **Vivek Mimrot** 
 - **Kapil Dawar**  
 
 ### 🎓 Guided By
 
 - **Dr. Arvind Rajawat** – Project Supervisor  
-
-
 
 
 ## 📸 ESP32-CAM Camera Server Setup (Image Capture & Response System)
@@ -71,11 +72,14 @@ This repository contains all necessary files to set up the ESP32-CAM as a web se
 - **📷 CAMERA SENSOR:** GC2145  
   > ⚠️ *Important: This is NOT the commonly used OV2640 sensor. Special handling and tuning were done for compatibility with GC2145.*
 
-- **🔌 MTDI Programmer (FTDI - FT232RL)** – Used to flash code onto the ESP32-CAM and for serial communication.
-- **🔋 Power Supply:** 3.7V Li-ion Battery / USB (regulated)
-- **🔴🟢 LEDs:** Connected to GPIO pins to indicate whether the scanned product is safe (Green) or unsafe (Red)
+- **🔌 FTDI Programmer (FT232RL)** – Used to flash code onto the ESP32-CAM and for serial communication.
+
 
 ---
+## 📸 ESP8266 Setup (feedback system)
+-**💻1602 LCD**
+-**🔌Push Button**
+-**🔌LED**
 
 ## 🧠 What's Important in This Repo?
 
@@ -115,7 +119,7 @@ During development with the RHYX M21-45 ESP32-CAM module (GC2145 sensor), severa
 
 ## Project Pics
 
-![alt text](./images/flowchart.png)
+![alt text](./images/flowchart.jpg)
 ## 
 ![alt text](./images/workflow.png)
 ## 
@@ -123,13 +127,10 @@ During development with the RHYX M21-45 ESP32-CAM module (GC2145 sensor), severa
 
 
 ## 🔭 Future Improvements
-
-- **AI-based Ingredient Classification** – Use machine learning to better detect harmful or disguised ingredients from raw text or labels.
-- **Alternative Product Suggestion** – Enhance backend logic to recommend safer and similar products when a scanned item is unsuitable.
-- **Standalone Robust Device** – Optimize the ESP32-based hardware into a fully self-contained wearable without reliance on external devices.
-- **Mobile App for Users** – Build an Android/iOS app for users to track history, receive notifications, and manage their dietary profiles more easily.
+-**Non barcode image handling**- If there is no barcode on image(local food products) and only ingredients labels is present then product label is directly captured and fast api server can be improved by introducing separate branch for handling this job(case of no barcode)
+- **Mobile App for Users** – Build an Android/iOS app for users to manage their wearable system,set preferences,perform all the jobs of wearable device simulataneously with single app.
 
 
 ## ✅ Final Note
 
-NutriScan is a step toward smarter and more personalized nutrition awareness. With continued development, it aims to evolve into a fully independent health companion for everyday use.
+NutriSentrix is a step toward smarter and more personalized nutrition awareness. With continued development, it aims to evolve into a fully independent health companion for everyday use.
