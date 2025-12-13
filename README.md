@@ -127,7 +127,7 @@ During development with the RHYX M21-45 ESP32-CAM module (GC2145 sensor), severa
 
 
 ## 🔭 Future Improvements
--**Non barcode image handling**- If there is no barcode on image(local food products) and only ingredients labels is present then product label is directly captured and fast api server can be improved by introducing separate branch for handling this job(case of no barcode)
+- **Non barcode image handling**- If there is no barcode on image(local food products) and only ingredients labels is present then product label is directly captured and fast api server can be improved by introducing separate branch for handling this job(case of no barcode)
 - **Mobile App for Users** – Build an Android/iOS app for users to manage their wearable system,set preferences,perform all the jobs of wearable device simulataneously with single app.
 
 
